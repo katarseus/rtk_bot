@@ -10,40 +10,39 @@ from telegram.ext import (
     ContextTypes,
 )
 
-BOT_TOKEN = "8758136921:AAFQjy7NC5vNkfs8km45mGR4sELGgXNPpxw"
+
+BOT_TOKEN = "8923383067:AAGZKRFCNMoJCH7__hp5UJbOWJwMs7zzauE"
+
 EVENTS = [
     {
-
         "type": "Действие пользователя",
         "title": "Пользователь запустил бота",
         "description": "Бот получил команду /start и показал приветствие.",
         "reaction": "Отправлено главное меню.",
     },
     {
-
         "type": "Действие пользователя",
         "title": "Открыт раздел «События»",
         "description": "Пользователь нажал кнопку «События» в главном меню.",
         "reaction": "Показан список доступных событий.",
     },
     {
-
         "type": "Действие пользователя",
         "title": "Открыт раздел «О боте»",
         "description": "Пользователь запросил информацию о назначении бота.",
         "reaction": "Показано описание проекта и разработчика.",
     },
     {
-
         "type": "Системное изменение",
         "title": "Обновление данных",
         "description": "Система обновила внутренний список событий.",
         "reaction": "Бот использует актуальный статичный массив.",
-    }
+    },
+
 ]
 
 
-def get_main_menu() -> InlineKeyboardMarkup:
+def get_main_menu():
     keyboard = [
         [InlineKeyboardButton("📅 События", callback_data="events")],
         [InlineKeyboardButton("ℹ️ О боте", callback_data="about")],
@@ -52,7 +51,7 @@ def get_main_menu() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(keyboard)
 
 
-def get_back_menu() -> InlineKeyboardMarkup:
+def get_back_menu():
     keyboard = [
         [InlineKeyboardButton("⬅️ В главное меню", callback_data="main_menu")]
     ]
@@ -60,8 +59,8 @@ def get_back_menu() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(keyboard)
 
 
-def format_events() -> str:
-    text = "📅 <b>События бота</b>\n\n"
+def format_events():
+    text = "<b>События бота</b>\n\n"
     text += "Ниже показаны события, на которые бот может реагировать:\n\n"
 
     for number, event in enumerate(EVENTS, start=1):
@@ -71,27 +70,27 @@ def format_events() -> str:
         reaction = escape(event["reaction"])
 
         text += (
-            f" <b>{number}. {title}</b>\n"
-            f" <b>Тип:</b> {event_type}\n"
-            f" <b>Описание:</b> {description}\n"
-            f" <b>Реакция бота:</b> {reaction}\n\n"
+            f"<b>{number}. {title}</b>\n"
+            f"🏷️ <b>Тип:</b> {event_type}\n"
+            f"📝 <b>Описание:</b> {description}\n"
+            f"🤖 <b>Реакция бота:</b> {reaction}\n\n"
         )
 
     return text
 
 
-def format_about() -> str:
+def format_about():
     return (
-        "ℹ️ <b>О боте</b>\n\n"
-        "Этот бот реагирует на заданные события\n"
+        "<b>О боте</b>\n\n"
+        "Этот бот создан в рамках практики.\n\n"
         "<b>Разработчик:</b> @katarseus"
     )
 
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
         "👋 <b>Привет!</b>\n\n"
-        "Выбери нужный раздел в главном меню:\n"
+        "Выбери нужный раздел в главном меню:"
     )
 
     await update.message.reply_text(
@@ -101,8 +100,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     )
 
 
-async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
+
 
     await query.answer()
 
@@ -123,7 +123,8 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     elif query.data == "main_menu":
         await query.edit_message_text(
             text=(
-                "Выбери нужный раздел:\n\n"
+                "<b>Главное меню</b>\n\n"
+                "Выбери нужный раздел:"
             ),
             reply_markup=get_main_menu(),
             parse_mode=ParseMode.HTML,
@@ -132,16 +133,20 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
 def main() -> None:
     if not BOT_TOKEN:
-        raise RuntimeError("Не найдена переменная окружения BOT_TOKEN")
+        raise RuntimeError(
+            "Не найден BOT_TOKEN. "
+            "Перед запуском укажи токен в переменной окружения BOT_TOKEN."
+        )
 
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
+
     app.add_handler(CallbackQueryHandler(handle_buttons))
 
     print("Бот запущен. Нажми Ctrl+C для остановки.")
 
-    app.run_polling(drop_pending_updates=True)
+    app.run_polling()
 
 
 if __name__ == "__main__":
