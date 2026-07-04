@@ -11,7 +11,7 @@ from telegram.ext import (
 )
 
 
-BOT_TOKEN = "8923383067:AAGZKRFCNMoJCH7__hp5UJbOWJwMs7zzauE"
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 EVENTS = [
     {
