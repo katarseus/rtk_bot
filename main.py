@@ -38,14 +38,13 @@ EVENTS = [
         "description": "Система обновила внутренний список событий.",
         "reaction": "Бот использует актуальный статичный массив.",
     },
-
 ]
 
 
 def get_main_menu():
     keyboard = [
-        [InlineKeyboardButton("📅 События", callback_data="events")],
-        [InlineKeyboardButton("ℹ️ О боте", callback_data="about")],
+        [InlineKeyboardButton("События", callback_data="events")],
+        [InlineKeyboardButton("О боте", callback_data="about")],
     ]
 
     return InlineKeyboardMarkup(keyboard)
@@ -53,28 +52,55 @@ def get_main_menu():
 
 def get_back_menu():
     keyboard = [
-        [InlineKeyboardButton("⬅️ В главное меню", callback_data="main_menu")]
+        [InlineKeyboardButton("В главное меню", callback_data="main_menu")]
     ]
 
     return InlineKeyboardMarkup(keyboard)
 
 
-def format_events():
-    text = "<b>События бота</b>\n\n"
-    text += "Ниже показаны события, на которые бот может реагировать:\n\n"
+def get_event_menu(index):
+    keyboard = []
 
-    for number, event in enumerate(EVENTS, start=1):
-        event_type = escape(event["type"])
-        title = escape(event["title"])
-        description = escape(event["description"])
-        reaction = escape(event["reaction"])
+    navigation_buttons = []
 
-        text += (
-            f"<b>{number}. {title}</b>\n"
-            f"🏷️ <b>Тип:</b> {event_type}\n"
-            f"📝 <b>Описание:</b> {description}\n"
-            f"🤖 <b>Реакция бота:</b> {reaction}\n\n"
+    if index > 0:
+        navigation_buttons.append(
+            InlineKeyboardButton("Назад", callback_data=f"event_{index - 1}")
         )
+
+    if index < len(EVENTS) - 1:
+        navigation_buttons.append(
+            InlineKeyboardButton("Вперёд", callback_data=f"event_{index + 1}")
+        )
+
+    if navigation_buttons:
+        keyboard.append(navigation_buttons)
+
+    keyboard.append(
+        [InlineKeyboardButton("В главное меню", callback_data="main_menu")]
+    )
+
+    return InlineKeyboardMarkup(keyboard)
+
+
+def format_event(index):
+    event = EVENTS[index]
+
+    event_type = escape(event["type"])
+    title = escape(event["title"])
+    description = escape(event["description"])
+    reaction = escape(event["reaction"])
+
+    total_events = len(EVENTS)
+    current_number = index + 1
+
+    text = (
+        f"<b>Событие {current_number} из {total_events}</b>\n\n"
+        f"<b>{title}</b>\n\n"
+        f"<b>Тип:</b> {event_type}\n"
+        f"<b>Описание:</b> {description}\n"
+        f"<b>Реакция бота:</b> {reaction}\n\n"
+    )
 
     return text
 
@@ -89,7 +115,7 @@ def format_about():
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
-        "👋 <b>Привет!</b>\n\n"
+        "<b>Привет!</b>\n\n"
         "Выбери нужный раздел в главном меню:"
     )
 
@@ -103,13 +129,23 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
 
-
     await query.answer()
 
     if query.data == "events":
+        index = 0
+
         await query.edit_message_text(
-            text=format_events(),
-            reply_markup=get_back_menu(),
+            text=format_event(index),
+            reply_markup=get_event_menu(index),
+            parse_mode=ParseMode.HTML,
+        )
+
+    elif query.data.startswith("event_"):
+        index = int(query.data.replace("event_", ""))
+
+        await query.edit_message_text(
+            text=format_event(index),
+            reply_markup=get_event_menu(index),
             parse_mode=ParseMode.HTML,
         )
 
